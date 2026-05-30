@@ -17,6 +17,14 @@ app = FastAPI(
     description="Short-video structured generation backend service",
     version="2.0.0",
 )
+
+# -----------------------------
+# CORS
+# -----------------------------
+# 作用：
+# 允许本地开发地址和 Vercel 前端地址访问 Zeabur 后端。
+# 你的线上前端现在是：
+# https://ai-instructio-frontend.vercel.app
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -28,9 +36,12 @@ app.add_middleware(
         "http://127.0.0.1:3002",
         "http://localhost:3003",
         "http://127.0.0.1:3003",
-        "http://127.0.0.1:5173",
         "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://ai-instructio-frontend.vercel.app",
     ],
+    # 允许所有 vercel.app 预览域名，避免之后 Vercel 生成 preview 域名时再次 CORS 报错
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -129,6 +140,15 @@ def _raise_http_error(exc: Exception) -> None:
 # -----------------------------
 # Routes
 # -----------------------------
+@app.get("/")
+async def root() -> Dict[str, Any]:
+    return {
+        "status": "ok",
+        "service": "ai-creator-backend",
+        "message": "Backend is running. Use /health, /api1, /api2, /api3, or /pipeline.",
+    }
+
+
 @app.get("/health")
 async def health() -> Dict[str, Any]:
     return {
