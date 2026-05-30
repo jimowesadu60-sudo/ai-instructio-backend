@@ -1,0 +1,139 @@
+【API3｜Route 分支 Prompt｜pro_script｜重构版】
+
+当 `generation_route = "pro_script"` 时，你必须在已经生成完成的 `base_storyboard_script` 基础上，继续生成适用于前端“专业脚本页面”的 `route_display_data`。
+
+-----------------------------------
+【本路线目标】
+前端主展示形式必须是：完整分镜表格。
+
+该页面不是分析报告页，不是建议页，不是执行说明页，而是一个可直接用于查看、编辑、导出的专业脚本表格页面。
+
+-----------------------------------
+【本路线必须满足的前端展示要求】
+1. 核心展示形式：
+- 完整分镜表格
+- 表格数据唯一绑定 `base_storyboard_script.table_columns` 与 `base_storyboard_script.shots`
+
+2. 表格固定字段：
+- 镜号
+- 时间轴
+- 画面描述
+- 机位
+- 摄法
+- 景别
+- 台词
+- 音效
+
+3. 配套功能要求：
+- 支持一键进入编辑模式
+- 支持直接编辑表格内全部字段内容
+- 支持 JPG / PDF / Excel 三种格式导出
+
+4. 页面风格要求：
+- 信息直接、结构清楚
+- 不堆叠分析性文字
+- 不额外输出与表格无关的大段说明
+
+-----------------------------------
+【route_display_data 输出原则】
+1. `route_display_data` 只服务前端展示和交互，不要重复复制整份母数据
+2. 分镜内容主体仍来自 `base_storyboard_script`
+3. 该对象应告诉前端：
+- 用什么方式展示
+- 绑定哪份数据
+- 是否可编辑
+- 可导出哪些格式
+- 页面标题如何显示
+
+4. 不要再额外生成第二套“脚本文本”或“摘要脚本”
+5. 不要把专业脚本页写成“脚本建议说明页”
+
+-----------------------------------
+【route_display_data 必须严格输出为以下结构形态】
+{
+  "display_type": "storyboard_table",
+  "page_title": "专业脚本",
+  "page_subtitle": "",
+  "primary_data_binding": {
+    "table_columns_path": "base_storyboard_script.table_columns",
+    "table_rows_path": "base_storyboard_script.shots"
+  },
+  "table_presentation": {
+    "table_name": "",
+    "default_view_mode": "table",
+    "show_full_table_directly": true,
+    "column_order": [
+      "镜号",
+      "时间轴",
+      "画面描述",
+      "机位",
+      "摄法",
+      "景别",
+      "台词",
+      "音效"
+    ]
+  },
+  "editing_config": {
+    "editable": true,
+    "edit_entry": "one_click_edit",
+    "editable_scope": "all_cells",
+    "editable_fields": [
+      "shot_no",
+      "timecode",
+      "visual_description",
+      "camera_position",
+      "shooting_method",
+      "shot_size",
+      "dialogue",
+      "sound_effect"
+    ]
+  },
+  "export_config": {
+    "export_enabled": true,
+    "supported_formats": ["jpg", "pdf", "excel"],
+    "default_file_name": ""
+  }
+}
+
+-----------------------------------
+【字段填写要求】
+1. `page_title` 固定为：
+- 专业脚本
+
+2. `page_subtitle`
+- 可为空字符串
+- 若填写，只能是简短辅助说明，不能写成长段文案
+
+3. `table_name`
+- 应为当前脚本的简洁命名
+- 与 `base_storyboard_script.script_title` 保持一致或高度一致
+
+4. `default_file_name`
+- 应适合导出使用
+- 简洁、可读，不要带奇怪符号
+- 可结合主题、平台、路线信息生成
+
+-----------------------------------
+【禁止事项】
+1. 不要在 `route_display_data` 中重复粘贴完整 shots 内容
+2. 不要增加“创作建议”“亮点分析”“导演说明”等与主页面无关的大段内容
+3. 不要输出 markdown
+4. 不要把“可编辑”“可导出”写成自然语言说明，而必须写成前端可直接读取的布尔值/数组/配置字段
+5. 不要偏离完整分镜表格这个核心展示形式
+
+-----------------------------------
+【与母数据的关系】
+你必须确保：
+- 专业脚本页展示的核心内容完全来自 `base_storyboard_script`
+- 平台适配、媒介适配、风格判断，都已经体现在母数据镜头中
+- 本路线不负责重新解释这些分析，只负责前端展示配置
+
+-----------------------------------
+【最终要求】
+当 route 为 `pro_script` 时，`result3.route_display_data` 必须是：
+- 轻量
+- 稳定
+- 前端可直接渲染
+- 严格围绕“完整分镜表格 + 编辑 + 导出”组织
+
+不要输出额外解释。
